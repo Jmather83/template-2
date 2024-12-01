@@ -44,6 +44,15 @@ export default function ParentDashboardLayout({ children }: ParentDashboardLayou
     },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-blue-100">
       <Header />
@@ -71,7 +80,7 @@ export default function ParentDashboardLayout({ children }: ParentDashboardLayou
           </div>
           <div className="absolute bottom-4 left-4">
             <button
-              onClick={signOut}
+              onClick={handleLogout}
               className="flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               <LogOut className="w-5 h-5" />

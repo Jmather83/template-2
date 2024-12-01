@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDocuments, addDocument, deleteDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
 import { WordList, Child } from '@/types';
-import { Plus, Trash2, Users, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Users, Edit2, Sparkles } from 'lucide-react';
 import ParentDashboardLayout from '@/components/layouts/ParentDashboardLayout';
 import CreateListModal from './CreateListModal';
 import AssignListModal from './AssignListModal';
@@ -106,6 +106,44 @@ export default function SpellingLists() {
     }
   };
 
+  const handleGenerateMoreWords = async (list: WordList) => {
+    try {
+      const response = await fetch('/api/generate-words', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          words: list.words.map(w => w.word),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate words');
+      }
+
+      // Create a new list with the generated words
+      const newList = {
+        name: `${list.name} (Extended)`,
+        category: list.category,
+        difficulty: list.difficulty,
+        words: data.words.map((w: { word: string; hint: string }) => ({
+          word: w.word.toLowerCase(),
+          hint: w.hint
+        })),
+        isActive: true,
+      };
+
+      await handleCreateList(newList);
+      alert(`Created new list based on theme: ${data.theme}`);
+    } catch (error) {
+      console.error('Error generating words:', error);
+      alert('Failed to generate additional words. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <ParentDashboardLayout>
@@ -174,6 +212,13 @@ export default function SpellingLists() {
                     title="Assign to children"
                   >
                     <Users className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleGenerateMoreWords(list)}
+                    className="p-2 text-purple-600 hover:text-purple-800 transition"
+                    title="Generate similar words"
+                  >
+                    <Sparkles className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleDeleteList(list.id)}

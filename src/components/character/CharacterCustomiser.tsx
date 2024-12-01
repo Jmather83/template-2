@@ -73,6 +73,7 @@ const DEFAULT_AVATAR_CONFIG: CharacterCustomization = {
   gender: 'other',
   skinTone: 'light',
   region: 'mysticForest',
+  selectedEquipment: 'wand',
   hair: {
     style: 'short',
     colour: 'black'
@@ -190,9 +191,8 @@ const generateImagePrompt = (customization: CharacterCustomization) => {
   } else if (mount) {
     equipmentText = `riding a majestic ${mount}`;
   }
-
   // Build the complete prompt
-  return `A magical portrait of a ${skinTone.toLowerCase()}-skinned ${title} with ${hairColor.toLowerCase()} ${hairStyle.toLowerCase()} hair, wearing a ${outfit?.toLowerCase()}, standing in the mystical ${region?.toLowerCase()}. ${equipmentText}. Fantasy character, digital art style, detailed, vibrant colors, magical atmosphere, dramatic lighting, high quality artwork.`;
+  return `A magical portrait of a ${skinTone?.toLowerCase() || 'fair'}-skinned ${title} with ${hairColor?.toLowerCase() || 'brown'} ${hairStyle?.toLowerCase() || 'short'} hair, wearing a ${outfit?.toLowerCase() || 'wizard robe'}, standing in the mystical ${region?.toLowerCase() || 'forest'}. ${equipmentText}. Fantasy character, digital art style, detailed, vibrant colors, magical atmosphere, dramatic lighting, high quality artwork.`;
 };
 
 export default function CharacterCustomiser({ child, onClose }: Props) {

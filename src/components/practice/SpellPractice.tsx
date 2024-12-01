@@ -19,9 +19,10 @@ interface Props {
   child: Child;
   onClose: () => void;
   onComplete: (score: number) => void;
+  selectedList?: WordList;
 }
 
-export default function SpellPractice({ child, onClose, onComplete }: Props) {
+export default function SpellPractice({ child, onClose, onComplete, selectedList }: Props) {
   const [loading, setLoading] = useState(true);
   const [wordList, setWordList] = useState<WordList | null>(null);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -61,8 +62,15 @@ export default function SpellPractice({ child, onClose, onComplete }: Props) {
       }
     };
 
-    fetchRecentList();
-  }, [child.id]);
+    // If we have a selected list from props, use that instead of fetching
+    if (selectedList) {
+      console.log('SpellPractice - Using provided list:', selectedList);
+      setWordList(selectedList);
+      setLoading(false);
+    } else {
+      fetchRecentList();
+    }
+  }, [child.id, selectedList]);
 
   useEffect(() => {
     // Function to initialize voices
