@@ -31,3 +31,36 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Add this to make date input text dark grey */
+input[type="date"] {
+  color: #374151; /* text-gray-700 equivalent */
+}
+
+/* For webkit browsers like Chrome/Safari */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.4);
+}
+
+/* React DatePicker Styles */
+.react-datepicker__input-container input {
+  color: #374151 !important; /* text-gray-700 equivalent */
+}
+
+.react-datepicker__day {
+  color: #374151;
+}
+
+.react-datepicker__day:hover {
+  background-color: #e5e7eb;
+}
+
+.react-datepicker__day--selected {
+  background-color: #7c3aed !important; /* purple-600 */
+  color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #7c3aed !important; /* purple-600 */
+  color: white !important;
+}

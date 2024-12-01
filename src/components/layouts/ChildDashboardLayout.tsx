@@ -1,57 +1,62 @@
 'use client';
 
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Users, BookOpen, Award, Settings, LogOut, Trophy } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import Header from './Header';
+import { useRouter, usePathname } from 'next/navigation';
+import { Trophy, Castle, Map, Book, Settings, LogOut, Search } from 'lucide-react';
 
-interface ParentDashboardLayoutProps {
+interface ChildDashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ParentDashboardLayout({ children }: ParentDashboardLayoutProps) {
-  const { user, signOut } = useAuth();
+export default function ChildDashboardLayout({ children }: ChildDashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const handleLogout = () => {
+    localStorage.removeItem('childUser');
+    router.push('/');
+  };
+
   const menuItems = [
     {
-      name: 'Child Profiles',
-      icon: <Users className="w-5 h-5" />,
-      href: '/parent/dashboard',
+      name: 'Spell Books',
+      icon: <Book className="w-5 h-5" />,
+      href: '/child/game',
     },
     {
-      name: 'Spelling Lists',
-      icon: <BookOpen className="w-5 h-5" />,
-      href: '/parent/spelling-lists',
+      name: 'Word Search',
+      icon: <Search className="w-5 h-5" />,
+      href: '/child/word-search',
     },
     {
       name: 'Test History',
       icon: <Trophy className="w-5 h-5" />,
-      href: '/parent/test-history',
+      href: '/child/test-history',
     },
     {
-      name: 'Progress Reports',
-      icon: <Award className="w-5 h-5" />,
-      href: '/parent/progress',
+      name: 'Overworld Map',
+      icon: <Map className="w-5 h-5" />,
+      href: '/child/overworld',
     },
     {
-      name: 'Settings',
+      name: 'Your Castle',
+      icon: <Castle className="w-5 h-5" />,
+      href: '/child/castle',
+    },
+    {
+      name: 'Options',
       icon: <Settings className="w-5 h-5" />,
-      href: '/parent/settings',
+      href: '/child/options',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-blue-100">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
       <div className="flex">
         {/* Sidebar */}
         <div className="w-64 bg-white shadow-lg min-h-screen">
           <div className="p-4">
-            <h2 className="text-xl font-bold text-purple-800 mb-6">Parent Dashboard</h2>
+            <h2 className="text-xl font-bold text-purple-800 mb-6">Adventure Menu</h2>
             <nav className="space-y-2">
               {menuItems.map((item) => (
                 <Link
@@ -71,11 +76,11 @@ export default function ParentDashboardLayout({ children }: ParentDashboardLayou
           </div>
           <div className="absolute bottom-4 left-4">
             <button
-              onClick={signOut}
+              onClick={handleLogout}
               className="flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               <LogOut className="w-5 h-5" />
-              <span>Logout</span>
+              <span>Exit Game</span>
             </button>
           </div>
         </div>

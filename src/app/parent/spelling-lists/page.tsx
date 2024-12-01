@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDocuments, addDocument, deleteDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
 import { WordList, Child } from '@/types';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { Plus, Trash2, Users, Edit2 } from 'lucide-react';
 import ParentDashboardLayout from '@/components/layouts/ParentDashboardLayout';
 import CreateListModal from './CreateListModal';
 import AssignListModal from './AssignListModal';
@@ -16,6 +16,7 @@ export default function SpellingLists() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedList, setSelectedList] = useState<WordList | null>(null);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function SpellingLists() {
     category: string;
     difficulty: 'beginner' | 'intermediate' | 'advanced';
     words: Array<{ word: string; hint?: string }>;
+    isActive: boolean;
   }) => {
     try {
       await addDocument('wordLists', {
@@ -84,6 +86,26 @@ export default function SpellingLists() {
     }
   };
 
+  const handleEditList = async (editedList: WordList) => {
+    try {
+      await updateDocument('wordLists', editedList.id, {
+        name: editedList.name,
+        category: editedList.category,
+        difficulty: editedList.difficulty,
+        words: editedList.words,
+        isActive: editedList.isActive
+      });
+      
+      // Refresh lists
+      const listsData = await getDocuments('wordLists') as WordList[];
+      setWordLists(listsData);
+      setShowEditModal(false);
+      setSelectedList(null);
+    } catch (error) {
+      console.error('Error updating list:', error);
+    }
+  };
+
   if (loading) {
     return (
       <ParentDashboardLayout>
@@ -113,7 +135,14 @@ export default function SpellingLists() {
             <div key={list.id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">{list.name}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-semibold text-gray-800">{list.name}</h3>
+                    {list.isActive ? (
+                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">Inactive</span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500">Category: {list.category}</p>
                   <p className="text-sm text-gray-500">
                     Difficulty: {list.difficulty}
@@ -129,15 +158,27 @@ export default function SpellingLists() {
                   <button
                     onClick={() => {
                       setSelectedList(list);
+                      setShowEditModal(true);
+                    }}
+                    className="p-2 text-blue-600 hover:text-blue-800 transition"
+                    title="Edit list"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedList(list);
                       setShowAssignModal(true);
                     }}
                     className="p-2 text-blue-600 hover:text-blue-800 transition"
+                    title="Assign to children"
                   >
                     <Users className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleDeleteList(list.id)}
                     className="p-2 text-red-500 hover:text-red-700 transition"
+                    title="Delete list"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -152,6 +193,18 @@ export default function SpellingLists() {
           <CreateListModal
             onClose={() => setShowCreateModal(false)}
             onSubmit={handleCreateList}
+          />
+        )}
+
+        {/* Edit List Modal */}
+        {showEditModal && selectedList && (
+          <CreateListModal
+            onClose={() => {
+              setShowEditModal(false);
+              setSelectedList(null);
+            }}
+            onSubmit={(editedData) => handleEditList({ ...selectedList, ...editedData })}
+            initialData={selectedList}
           />
         )}
 

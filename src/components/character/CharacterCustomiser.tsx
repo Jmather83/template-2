@@ -5,6 +5,7 @@ import { Child, CharacterCustomization } from '@/types';
 import { updateDocument } from '@/lib/firebase/firebaseUtils';
 import { Wand2, Book, Sword, Save, Bird } from 'lucide-react';
 import Image from 'next/image';
+import CharacterImageGenerator from './CharacterImageGenerator';
 
 const GENDERS = [
   { value: 'male', label: 'Male' },
@@ -154,6 +155,46 @@ const getCharacterTitle = (gender: string) => {
   }
 };
 
+const generateImagePrompt = (customization: CharacterCustomization) => {
+  // Get basic character details
+  const title = customization.gender === 'male' ? 'young wizard' : 
+               customization.gender === 'female' ? 'young witch' : 
+               'young magician';
+
+  // Get location and appearance details
+  const region = REGION_STYLES.find(r => r.id === customization.region)?.name;
+  const outfit = OUTFIT_STYLES.find(o => o.id === customization.outfit.style)?.name;
+  const hairStyle = HAIR_STYLES.find(s => s.value === customization.hair.style)?.label;
+  const hairColor = HAIR_COLORS.find(c => c.value === customization.hair.colour)?.label;
+  const skinTone = SKIN_TONES.find(s => s.value === customization.skinTone)?.label;
+
+  // Get equipment details
+  const wand = WAND_STYLES.find(w => w.value === customization.equipment.wand.style)?.label;
+  const book = BOOK_STYLES.find(b => b.value === customization.equipment.book.style)?.label;
+  const mount = MOUNT_STYLES.find(m => m.value === customization.equipment.mount.style)?.label;
+
+  // Build equipment string
+  let equipmentText = '';
+  if (wand && book && mount) {
+    equipmentText = `wielding an ${wand} and carrying a ${book}, while riding a majestic ${mount}`;
+  } else if (wand && book) {
+    equipmentText = `wielding an ${wand} and carrying a ${book}`;
+  } else if (wand && mount) {
+    equipmentText = `wielding an ${wand} while riding a majestic ${mount}`;
+  } else if (book && mount) {
+    equipmentText = `carrying a ${book} while riding a majestic ${mount}`;
+  } else if (wand) {
+    equipmentText = `wielding an ${wand}`;
+  } else if (book) {
+    equipmentText = `carrying a ${book}`;
+  } else if (mount) {
+    equipmentText = `riding a majestic ${mount}`;
+  }
+
+  // Build the complete prompt
+  return `A magical portrait of a ${skinTone.toLowerCase()}-skinned ${title} with ${hairColor.toLowerCase()} ${hairStyle.toLowerCase()} hair, wearing a ${outfit?.toLowerCase()}, standing in the mystical ${region?.toLowerCase()}. ${equipmentText}. Fantasy character, digital art style, detailed, vibrant colors, magical atmosphere, dramatic lighting, high quality artwork.`;
+};
+
 export default function CharacterCustomiser({ child, onClose }: Props) {
   const initialConfig = {
     ...DEFAULT_AVATAR_CONFIG,
@@ -289,31 +330,18 @@ export default function CharacterCustomiser({ child, onClose }: Props) {
           {/* Character Preview */}
           <div className="bg-purple-50 p-6 rounded-lg">
             <h3 className="text-lg font-semibold mb-4">Character Preview</h3>
-            <div className="aspect-square bg-white rounded-lg shadow-inner flex items-center justify-center relative">
-              {/* Placeholder for character preview - replace with actual character rendering */}
-              <div className="w-64 h-64 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4" 
-                         style={{ backgroundColor: SKIN_TONES.find(st => st.value === customization.skinTone)?.color }}>
-                      {/* Basic face representation */}
-                      <div className="relative w-full h-full">
-                        <div className="absolute w-full top-1/2 flex justify-center">
-                          <div className="w-4 h-4 bg-black rounded-full mx-1"></div>
-                          <div className="w-4 h-4 bg-black rounded-full mx-1"></div>
-                        </div>
-                        <div className="absolute w-full top-2/3 flex justify-center">
-                          <div className="w-8 h-2 bg-black rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-800">
-                      {getCharacterDescription(customization)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CharacterImageGenerator
+              prompt={generateImagePrompt(customization)}
+              onSelectImage={(imageUrl) => setCustomization(prev => ({
+                ...prev,
+                avatarUrl: imageUrl
+              }))}
+              selectedImage={customization.avatarUrl}
+              childId={child.id}
+            />
+            <p className="text-sm text-gray-800 mt-4">
+              {getCharacterDescription(customization)}
+            </p>
           </div>
 
           {/* Customization Options */}
@@ -407,7 +435,7 @@ export default function CharacterCustomiser({ child, onClose }: Props) {
 
             {/* Region Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Choose Your Region</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Choose Your Region</h3>
               <select
                 value={customization.region}
                 onChange={(e) => setCustomization(prev => ({
@@ -421,6 +449,7 @@ export default function CharacterCustomiser({ child, onClose }: Props) {
                     key={region.id} 
                     value={region.id}
                     disabled={!region.isUnlocked}
+                    className="text-gray-900"
                   >
                     {region.name} {!region.isUnlocked ? '(Locked)' : ''}
                   </option>
@@ -430,7 +459,7 @@ export default function CharacterCustomiser({ child, onClose }: Props) {
 
             {/* Outfit Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Choose Your Outfit</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Choose Your Outfit</h3>
               <select
                 value={customization.outfit.style}
                 onChange={(e) => setCustomization(prev => ({
@@ -444,13 +473,14 @@ export default function CharacterCustomiser({ child, onClose }: Props) {
                     key={outfit.id} 
                     value={outfit.id}
                     disabled={!outfit.isUnlocked}
+                    className="text-gray-900"
                   >
                     {outfit.name} {!outfit.isUnlocked ? '(Locked)' : ''}
                   </option>
                 ))}
               </select>
               {OUTFIT_STYLES.find(o => o.id === customization.outfit.style)?.description && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   {OUTFIT_STYLES.find(o => o.id === customization.outfit.style)?.description}
                 </p>
               )}

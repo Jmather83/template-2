@@ -21,6 +21,7 @@ export interface Child {
     completedQuests: number;
     accuracy: number;
   };
+  testHistory: TestResult[];
 }
 
 export interface WordList {
@@ -33,6 +34,7 @@ export interface WordList {
     hint?: string;
   }>;
   assignedTo: string[]; // Child IDs
+  isActive: boolean;
 }
 
 export interface CharacterCustomization {
@@ -73,6 +75,7 @@ export interface CharacterCustomization {
     isUnlocked: boolean;
   }[];
   selectedEquipment: 'wand' | 'book' | 'mount';
+  avatarUrl?: string;
 }
 
 export interface UISettings {
@@ -94,4 +97,24 @@ export interface LearningPreferences {
     difficulty: string;
     learningStyle: string;
   };
+}
+
+export interface TestResult {
+  id: string;
+  date: string;
+  childId: string;
+  listId: string;
+  listName: string;
+  score: number;
+  total: number;
+  percentage: number;
+  timeTaken: number;
+  type: 'spelling' | 'wordsearch';
+  // Spelling test specific fields
+  wordsCorrect?: string[];
+  wordsIncorrect?: { word: string; userInput: string }[];
+  // Word search specific fields
+  wordsFound?: string[];
+  wordsNotFound?: string[];
+  difficulty?: string;
 } 

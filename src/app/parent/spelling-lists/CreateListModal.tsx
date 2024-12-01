@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
+import { WordList } from '@/types';
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -10,15 +11,18 @@ interface CreateListModalProps {
     category: string;
     difficulty: 'beginner' | 'intermediate' | 'advanced';
     words: Array<{ word: string; hint?: string }>;
+    isActive: boolean;
   }) => void;
+  initialData?: WordList;
 }
 
-export default function CreateListModal({ onClose, onSubmit }: CreateListModalProps) {
+export default function CreateListModal({ onClose, onSubmit, initialData }: CreateListModalProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    difficulty: 'beginner' as const,
-    words: [] as Array<{ word: string; hint?: string }>,
+    name: initialData?.name || '',
+    category: initialData?.category || '',
+    difficulty: initialData?.difficulty || 'beginner' as const,
+    words: initialData?.words || [] as Array<{ word: string; hint?: string }>,
+    isActive: initialData?.isActive ?? true,
   });
   const [newWord, setNewWord] = useState({ word: '', hint: '' });
 
@@ -49,10 +53,12 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-centre justify-centre z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-centre mb-6">
-          <h2 className="text-2xl font-bold text-purple-800">Create New Spelling List</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-purple-800">
+            {initialData ? 'Edit Spelling List' : 'Create New Spelling List'}
+          </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
@@ -60,7 +66,7 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-grey-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               List Name
             </label>
             <input
@@ -73,7 +79,7 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-grey-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Category
             </label>
             <input
@@ -86,7 +92,7 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-grey-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Difficulty Level
             </label>
             <select
@@ -101,8 +107,20 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
             </select>
           </div>
 
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+              />
+              <span className="text-sm font-medium text-gray-900">Active (available for tests and word searches)</span>
+            </label>
+          </div>
+
           <div className="border-t pt-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Words</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Words</h3>
             
             <div className="flex gap-4 mb-4">
               <div className="flex-1">
@@ -136,8 +154,8 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
               {formData.words.map((word, index) => (
                 <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                   <div>
-                    <p className="font-medium">{word.word}</p>
-                    {word.hint && <p className="text-sm text-gray-500">Hint: {word.hint}</p>}
+                    <p className="font-medium text-gray-900">{word.word}</p>
+                    {word.hint && <p className="text-sm text-gray-700">Hint: {word.hint}</p>}
                   </div>
                   <button
                     type="button"
@@ -163,7 +181,7 @@ export default function CreateListModal({ onClose, onSubmit }: CreateListModalPr
               type="submit"
               className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
             >
-              Create List
+              {initialData ? 'Save Changes' : 'Create List'}
             </button>
           </div>
         </form>
